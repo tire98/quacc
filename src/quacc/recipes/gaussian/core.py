@@ -58,20 +58,21 @@ def static_job(
         Dictionary of results
     """
     calc_defaults = {
-        "mem": "16GB",
+        #"mem": "16GB",
         "chk": "Gaussian.chk",
-        "nprocshared": psutil.cpu_count(logical=False),
+        #"nprocshared": psutil.cpu_count(logical=False),
         "xc": xc,
         "basis": basis,
         "charge": charge,
         "mult": spin_multiplicity,
-        "force": "",
-        "scf": ["maxcycle=250", "xqc"],
-        "integral": "ultrafine",
-        "nosymmetry": "",
-        "pop": "CM5",
-        "gfinput": "",
-        "ioplist": ["6/7=3", "2/9=2000"],  # see ASE issue #660
+        "dispersion": "gd3",
+        #"scf": ["maxcycle=250", "xqc"],
+        #"force": "",
+        #"integral": "ultrafine",
+        #"nosymmetry": "",
+        #"pop": "CM5",
+        #"gfinput": "",
+        "ioplist": ["2/9=2000"],  # see ASE issue #660
     }
     return run_and_summarize(
         atoms,
@@ -128,18 +129,19 @@ def relax_job(
         Dictionary of results
     """
     calc_defaults = {
-        "mem": "16GB",
+        #"mem": "16GB",
         "chk": "Gaussian.chk",
-        "nprocshared": psutil.cpu_count(logical=False),
+        #"nprocshared": psutil.cpu_count(logical=False),
         "xc": xc,
         "basis": basis,
         "charge": charge,
         "mult": spin_multiplicity,
         "opt": "",
-        "pop": "CM5",
-        "scf": ["maxcycle=250", "xqc"],
-        "integral": "ultrafine",
-        "nosymmetry": "",
+        "dispersion": "gd3",
+        #"pop": "CM5",
+        #"scf": ["maxcycle=250", "xqc"],
+        #"integral": "ultrafine",
+        #"nosymmetry": "",
         "ioplist": ["2/9=2000"],  # ASE issue #660
     }
     if freq:
