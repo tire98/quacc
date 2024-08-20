@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import psutil
-
 from quacc import job
 from quacc.recipes.gaussian._base import run_and_summarize
 
