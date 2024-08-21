@@ -229,6 +229,7 @@ def IRC_job(
     xc: str = "wb97xd",
     basis: str = "def2svp",
     irc_points: int = 20,
+    stepsize: int = 10,
     copy_files: SourceDirectory | dict[SourceDirectory, Filenames] | None = None,
     additional_fields: dict[str, Any] | None = None,
     **calc_kwargs,
@@ -268,7 +269,7 @@ def IRC_job(
         "basis": basis,
         "charge": charge,
         "mult": spin_multiplicity,
-        "irc": f"calcfc,maxpoints={irc_points},stepsize=10,maxcycle=100",
+        "irc": f"calcfc,maxpoints={irc_points},stepsize={stepsize},maxcycle=100",
         "iop": [
             "7/33=1",  # Save IRC geometries
             "2/9=2000",  # ASE issue #660
