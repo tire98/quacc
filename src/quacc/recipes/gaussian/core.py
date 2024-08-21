@@ -63,7 +63,7 @@ def static_job(
         "basis": basis,
         "charge": charge,
         "mult": spin_multiplicity,
-        "dispersion": "empiricaldispersion=gd3",
+        "empiricaldispersion": "gd3",
         "scf": ["maxcycle=250", "xqc"],
         "ioplist": ["2/9=2000"],  # see ASE issue #660
     }
@@ -133,7 +133,7 @@ def relax_job(
         "charge": charge,
         "mult": spin_multiplicity,
         "opt": "",
-        "dispersion": "empiricaldispersion=gd3",
+        "empiricaldispersion": "gd3",
         "scf": ["maxcycle=250", "xqc"],
         "ioplist": ["2/9=2000"],  # see ASE issue #660
     }
@@ -201,7 +201,7 @@ def TS_job(
         "basis": basis,
         "charge": charge,
         "mult": spin_multiplicity,
-        "dispersion": "empiricaldispersion=gd3",
+        "empiricaldispersion": "gd3",
         "opt": "calcfc,ts,noeigentest",
         "freq": "",
         "scf": ["maxcycle=250", "xqc"],
@@ -271,7 +271,7 @@ def IRC_job(
         "basis": basis,
         "charge": charge,
         "mult": spin_multiplicity,
-        "dispersion": "empiricaldispersion=gd3",
+        "empiricaldispersion": "gd3",
         "irc": f"calcfc,maxpoints={irc_points},stepsize={stepsize},maxcycle=100",
         "iop": [
             "7/33=1",  # Save IRC geometries
