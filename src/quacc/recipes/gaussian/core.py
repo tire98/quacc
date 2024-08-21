@@ -73,7 +73,10 @@ def static_job(
         spin_multiplicity=spin_multiplicity,
         calc_defaults=calc_defaults,
         calc_swaps=calc_kwargs,
-        additional_fields={"name": "Gaussian Static"} | (additional_fields or {}),
+        additional_fields={
+            "name": "Gaussian Static",
+            **(additional_fields if isinstance(additional_fields, dict) else {})
+        },
         copy_files=copy_files,
     )
 
@@ -143,7 +146,10 @@ def relax_job(
         spin_multiplicity=spin_multiplicity,
         calc_defaults=calc_defaults,
         calc_swaps=calc_kwargs,
-        additional_fields={"name": "Gaussian Relax"} | (additional_fields or {}),
+        additional_fields={
+            "name": "Gaussian Relax",
+            **(additional_fields if isinstance(additional_fields, dict) else {})
+        },
         copy_files=copy_files,
     )
 
@@ -208,7 +214,10 @@ def TS_job(
         spin_multiplicity=spin_multiplicity,
         calc_defaults=calc_defaults,
         calc_swaps=calc_kwargs,
-        additional_fields={"name": "Gaussian TS"} | (additional_fields or {}),
+        additional_fields={
+            "name": "Gaussian TS",
+            **(additional_fields if isinstance(additional_fields, dict) else {})
+        },
         copy_files=copy_files,
     )
 
@@ -281,7 +290,10 @@ def IRC_job(
         spin_multiplicity=spin_multiplicity,
         calc_defaults=forward_calc,
         calc_swaps=calc_kwargs,
-        additional_fields={"name": "Gaussian IRC Forward"} | (additional_fields or {}),
+        additional_fields={
+            "name": "Gaussian IRC Forward",
+            **(additional_fields if isinstance(additional_fields, dict) else {})
+        },
         copy_files=copy_files,
     )
 
@@ -298,7 +310,10 @@ def IRC_job(
         spin_multiplicity=spin_multiplicity,
         calc_defaults=backward_calc,
         calc_swaps=calc_kwargs,
-        additional_fields={"name": "Gaussian IRC Reverse"} | (additional_fields or {}),
+        additional_fields={
+            "name": "Gaussian IRC Reverse",
+            **(additional_fields if isinstance(additional_fields, dict) else {})
+        },
         copy_files=copy_files,
     )
 
