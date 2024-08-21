@@ -67,19 +67,13 @@ def static_job(
         "scf": ["maxcycle=250", "xqc"],
         "ioplist": ["2/9=2000"],  # see ASE issue #660
     }
-
-    if additional_fields is None:
-        additional_fields = {"name": "Gaussian Static"}
-    else:
-        additional_fields = {"name": "Gaussian Static", **additional_fields}
-
     return run_and_summarize(
         atoms,
         charge=charge,
         spin_multiplicity=spin_multiplicity,
         calc_defaults=calc_defaults,
         calc_swaps=calc_kwargs,
-        additional_fields=additional_fields,
+        additional_fields={"name": "Gaussian Static"} | (additional_fields or {}),
         copy_files=copy_files,
     )
 
@@ -87,13 +81,13 @@ def static_job(
 @job
 def relax_job(
     atoms: Atoms,
-    charge: int,
-    spin_multiplicity: int,
+    charge: int = 0,
+    spin_multiplicity: int = 1,
     xc: str = "wb97xd",
-    basis: str = "def2tzvp",
+    basis: str = "def2svp",
     freq: bool = False,
-    additional_fields: dict[str, Any] | None = None,
     copy_files: SourceDirectory | dict[SourceDirectory, Filenames] | None = None,
+    additional_fields: dict[str, Any] | None = None,
     **calc_kwargs,
 ) -> RunSchema:
     """
@@ -138,15 +132,10 @@ def relax_job(
         "opt": "",
         "dispersion": "empiricaldispersion=gd3",
         "scf": ["maxcycle=250", "xqc"],
-        "ioplist": ["2/9=2000"],  # ASE issue #660
+        "ioplist": ["2/9=2000"],  # see ASE issue #660
     }
     if freq:
         calc_defaults["freq"] = ""
-
-    if additional_fields is None:
-        additional_fields = {"name": "Gaussian Relax"}
-    else:
-        additional_fields = {"name": "Gaussian Relax", **additional_fields}
 
     return run_and_summarize(
         atoms,
@@ -154,19 +143,19 @@ def relax_job(
         spin_multiplicity=spin_multiplicity,
         calc_defaults=calc_defaults,
         calc_swaps=calc_kwargs,
-        additional_fields=additional_fields,
+        additional_fields={"name": "Gaussian Relax"} | (additional_fields or {}),
         copy_files=copy_files,
     )
 
 @job
 def TS_job(
     atoms: Atoms,
-    charge: int,
-    spin_multiplicity: int,
+    charge: int = 0,
+    spin_multiplicity: int = 1,
     xc: str = "wb97xd",
     basis: str = "def2svp",
-    additional_fields: dict[str, Any] | None = None,
     copy_files: SourceDirectory | dict[SourceDirectory, Filenames] | None = None,
+    additional_fields: dict[str, Any] | None = None,
     **calc_kwargs,
 ) -> RunSchema:
     """
@@ -199,22 +188,19 @@ def TS_job(
         Dictionary of results
     """
     calc_defaults = {
+        #"mem": "16GB",
+        #"nprocshared": psutil.cpu_count(logical=False),
         "chk": "Gaussian.chk",
         "xc": xc,
         "basis": basis,
         "charge": charge,
         "mult": spin_multiplicity,
+        "dispersion": "empiricaldispersion=gd3",
         "opt": "calcfc,ts,noeigentest",
         "freq": "",
-        "dispersion": "empiricaldispersion=gd3",
         "scf": ["maxcycle=250", "xqc"],
-        "ioplist": ["2/9=2000"],  # ASE issue #660
+        "ioplist": ["2/9=2000"],  # see ASE issue #660
     }
-
-    if additional_fields is None:
-        additional_fields = {"name": "Gaussian TS"}
-    else:
-        additional_fields = {"name": "Gaussian TS", **additional_fields}
 
     return run_and_summarize(
         atoms,
@@ -222,15 +208,15 @@ def TS_job(
         spin_multiplicity=spin_multiplicity,
         calc_defaults=calc_defaults,
         calc_swaps=calc_kwargs,
-        additional_fields=additional_fields,
+        additional_fields={"name": "Gaussian TS"} | (additional_fields or {}),
         copy_files=copy_files,
     )
 
 @job
 def IRC_job(
     atoms: Atoms,
-    charge: int,
-    spin_multiplicity: int,
+    charge: int = 0,
+    spin_multiplicity: int = 0,
     xc: str = "wb97xd",
     basis: str = "def2svp",
     irc_points: int = 20,
@@ -269,6 +255,8 @@ def IRC_job(
         Dictionary of results
     """
     calc_defaults = {
+        #"mem": "16GB",
+        #"nprocshared": psutil.cpu_count(logical=False),
         "chk": "Gaussian.chk",
         "xc": xc,
         "basis": basis,
@@ -287,18 +275,13 @@ def IRC_job(
     forward_calc = calc_defaults.copy()
     forward_calc["irc"] += ",forward"
 
-    if additional_fields is None:
-        additional_fields = {"name": "Gaussian IRC Forward"}
-    else:
-        additional_fields = {"name": "Gaussian IRC Forward", **additional_fields}
-    
     forward_result = run_and_summarize(
         atoms,
         charge=charge,
         spin_multiplicity=spin_multiplicity,
         calc_defaults=forward_calc,
         calc_swaps=calc_kwargs,
-        additional_fields=additional_fields,
+        additional_fields={"name": "Gaussian IRC Forward"} | (additional_fields or {}),
         copy_files=copy_files,
     )
 
@@ -315,7 +298,7 @@ def IRC_job(
         spin_multiplicity=spin_multiplicity,
         calc_defaults=backward_calc,
         calc_swaps=calc_kwargs,
-        additional_fields=additional_fields,
+        additional_fields={"name": "Gaussian IRC Reverse"} | (additional_fields or {}),
         copy_files=copy_files,
     )
 
