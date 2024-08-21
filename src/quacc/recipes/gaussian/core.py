@@ -161,7 +161,7 @@ def TS_job(
     charge: int,
     spin_multiplicity: int,
     xc: str = "wb97xd",
-    basis: str = "deftzvp",
+    basis: str = "def2svp",
     copy_files: SourceDirectory | dict[SourceDirectory, Filenames] | None = None,
     additional_fields: dict[str, Any] | None = None,
     **calc_kwargs,
@@ -207,6 +207,9 @@ def TS_job(
         "scf": ["maxcycle=250", "xqc"],
         "ioplist": ["2/9=2000"],  # ASE issue #660
     }
+    base_additional_fields = {"name": "Gaussian TS"}
+    if additional_fields:
+        base_additional_fields.update(additional_fields)
 
     return run_and_summarize(
         atoms,
@@ -214,7 +217,7 @@ def TS_job(
         spin_multiplicity=spin_multiplicity,
         calc_defaults=calc_defaults,
         calc_swaps=calc_kwargs,
-        additional_fields={"name": "Gaussian TS"} | (additional_fields or {}),
+        additional_fields=base_additional_fields,
         copy_files=copy_files,
     )
 
@@ -224,9 +227,8 @@ def IRC_job(
     charge: int,
     spin_multiplicity: int,
     xc: str = "wb97xd",
-    basis: str = "def2tzvp",
+    basis: str = "def2svp",
     irc_points: int = 20,
-    stepsize: float = 10.0,
     copy_files: SourceDirectory | dict[SourceDirectory, Filenames] | None = None,
     additional_fields: dict[str, Any] | None = None,
     **calc_kwargs,
@@ -266,7 +268,7 @@ def IRC_job(
         "basis": basis,
         "charge": charge,
         "mult": spin_multiplicity,
-        "irc": f"calcfc,maxpoints={irc_points},stepsize={stepsize},maxcycle=100",
+        "irc": f"calcfc,maxpoints={irc_points},stepsize=10,maxcycle=100",
         "iop": [
             "7/33=1",  # Save IRC geometries
             "2/9=2000",  # ASE issue #660
@@ -278,13 +280,17 @@ def IRC_job(
     forward_calc = calc_defaults.copy()
     forward_calc["irc"] += ",forward"
     
+    forward_base_fields = {"name": "Gaussian IRC Forward"}
+    if additional_fields:
+        forward_base_fields.update(additional_fields)
+    
     forward_result = run_and_summarize(
         atoms,
         charge=charge,
         spin_multiplicity=spin_multiplicity,
         calc_defaults=forward_calc,
         calc_swaps=calc_kwargs,
-        additional_fields={"name": "IRC Forward"} | (additional_fields or {}),
+        additional_fields=forward_base_fields,
         copy_files=copy_files,
     )
 
@@ -292,13 +298,17 @@ def IRC_job(
     backward_calc = calc_defaults.copy()
     backward_calc["irc"] += ",reverse"
     
+    backward_base_fields = {"name": "Gaussian IRC Backward"}
+    if additional_fields:
+        backward_base_fields.update(additional_fields)
+    
     backward_result = run_and_summarize(
         atoms,
         charge=charge,
         spin_multiplicity=spin_multiplicity,
         calc_defaults=backward_calc,
         calc_swaps=calc_kwargs,
-        additional_fields={"name": "IRC Backward"} | (additional_fields or {}),
+        additional_fields=backward_base_fields,
         copy_files=copy_files,
     )
 
