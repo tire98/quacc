@@ -64,7 +64,7 @@ def static_job(
         "charge": charge,
         "mult": spin_multiplicity,
         "dispersion": "empiricaldispersion=gd3",
-        #"scf": ["maxcycle=250", "xqc"],
+        "scf": ["maxcycle=250", "xqc"],
         #"force": "",
         #"integral": "ultrafine",
         #"nosymmetry": "",
@@ -137,7 +137,7 @@ def relax_job(
         "opt": "",
         "dispersion": "empiricaldispersion=gd3",
         #"pop": "CM5",
-        #"scf": ["maxcycle=250", "xqc"],
+        "scf": ["maxcycle=250", "xqc"],
         #"integral": "ultrafine",
         #"nosymmetry": "",
         "ioplist": ["2/9=2000"],  # ASE issue #660
@@ -154,3 +154,159 @@ def relax_job(
         additional_fields={"name": "Gaussian Relax"} | (additional_fields or {}),
         copy_files=copy_files,
     )
+
+@job
+def TS_job(
+    atoms: Atoms,
+    charge: int,
+    spin_multiplicity: int,
+    xc: str = "wb97xd",
+    basis: str = "deftzvp",
+    copy_files: SourceDirectory | dict[SourceDirectory, Filenames] | None = None,
+    additional_fields: dict[str, Any] | None = None,
+    **calc_kwargs,
+) -> RunSchema:
+    """
+    Carry out a Transition State optimization with frequency calculation.
+
+    Parameters
+    ----------
+    atoms
+        Atoms object
+    charge
+        Charge of the system.
+    spin_multiplicity
+        Multiplicity of the system.
+    xc
+        Exchange-correlation functional
+    basis
+        Basis set
+    copy_files
+        Files to copy (and decompress) from source to the runtime directory.
+    additional_fields
+        Additional fields to add to the results
+    **calc_kwargs
+        Custom kwargs for the Gaussian calculator. Set a value to
+        `quacc.Remove` to remove a pre-existing key entirely. For a list of available
+        keys, refer to the [ase.calculators.gaussian.Gaussian][] calculator.
+
+    Returns
+    -------
+    RunSchema
+        Dictionary of results
+    """
+    calc_defaults = {
+        "chk": "Gaussian.chk",
+        "xc": xc,
+        "basis": basis,
+        "charge": charge,
+        "mult": spin_multiplicity,
+        "opt": "calcfc,ts,noeigentest",
+        "freq": "",
+        "dispersion": "empiricaldispersion=gd3",
+        "scf": ["maxcycle=250", "xqc"],
+        "ioplist": ["2/9=2000"],  # ASE issue #660
+    }
+
+    return run_and_summarize(
+        atoms,
+        charge=charge,
+        spin_multiplicity=spin_multiplicity,
+        calc_defaults=calc_defaults,
+        calc_swaps=calc_kwargs,
+        additional_fields={"name": "Gaussian TS"} | (additional_fields or {}),
+        copy_files=copy_files,
+    )
+
+@job
+def IRC_job(
+    atoms: Atoms,
+    charge: int,
+    spin_multiplicity: int,
+    xc: str = "wb97xd",
+    basis: str = "def2tzvp",
+    irc_points: int = 20,
+    stepsize: float = 10.0,
+    copy_files: SourceDirectory | dict[SourceDirectory, Filenames] | None = None,
+    additional_fields: dict[str, Any] | None = None,
+    **calc_kwargs,
+) -> RunSchema:
+    """
+    Carry out an Intrinsic Reaction Coordinate (IRC) calculation in both forward and backward directions.
+
+    Parameters
+    ----------
+    atoms
+        Atoms object representing the transition state
+    charge
+        Charge of the system
+    spin_multiplicity
+        Multiplicity of the system
+    xc
+        Exchange-correlation functional
+    basis
+        Basis set
+    irc_points
+        Number of points to calculate in each direction of the IRC
+    copy_files
+        Files to copy (and decompress) from source to the runtime directory
+    additional_fields
+        Additional fields to add to the results
+    **calc_kwargs
+        Custom kwargs for the Gaussian calculator
+
+    Returns
+    -------
+    RunSchema
+        Dictionary of results
+    """
+    calc_defaults = {
+        "chk": "Gaussian.chk",
+        "xc": xc,
+        "basis": basis,
+        "charge": charge,
+        "mult": spin_multiplicity,
+        "irc": f"calcfc,maxpoints={irc_points},stepsize={stepsize},maxcycle=100",
+        "iop": [
+            "7/33=1",  # Save IRC geometries
+            "2/9=2000",  # ASE issue #660
+        ],
+        "scf": ["maxcycle=250", "xqc"],
+    }
+
+    # Forward IRC
+    forward_calc = calc_defaults.copy()
+    forward_calc["irc"] += ",forward"
+    
+    forward_result = run_and_summarize(
+        atoms,
+        charge=charge,
+        spin_multiplicity=spin_multiplicity,
+        calc_defaults=forward_calc,
+        calc_swaps=calc_kwargs,
+        additional_fields={"name": "IRC Forward"} | (additional_fields or {}),
+        copy_files=copy_files,
+    )
+
+    # Backward IRC
+    backward_calc = calc_defaults.copy()
+    backward_calc["irc"] += ",reverse"
+    
+    backward_result = run_and_summarize(
+        atoms,
+        charge=charge,
+        spin_multiplicity=spin_multiplicity,
+        calc_defaults=backward_calc,
+        calc_swaps=calc_kwargs,
+        additional_fields={"name": "IRC Backward"} | (additional_fields or {}),
+        copy_files=copy_files,
+    )
+
+    # Combine results
+    combined_result = {
+        "forward_irc": forward_result,
+        "backward_irc": backward_result,
+        "name": "Gaussian IRC (Forward and Backward)"
+    }
+
+    return RunSchema(**combined_result)
