@@ -128,18 +128,15 @@ def relax_job(
     """
     calc_defaults = {
         #"mem": "16GB",
-        "chk": "Gaussian.chk",
         #"nprocshared": psutil.cpu_count(logical=False),
+        "chk": "Gaussian.chk",
         "xc": xc,
         "basis": basis,
         "charge": charge,
         "mult": spin_multiplicity,
         "opt": "",
         "dispersion": "empiricaldispersion=gd3",
-        #"pop": "CM5",
         "scf": ["maxcycle=250", "xqc"],
-        #"integral": "ultrafine",
-        #"nosymmetry": "",
         "ioplist": ["2/9=2000"],  # ASE issue #660
     }
     if freq:
@@ -207,9 +204,6 @@ def TS_job(
         "scf": ["maxcycle=250", "xqc"],
         "ioplist": ["2/9=2000"],  # ASE issue #660
     }
-    base_additional_fields = {"name": "Gaussian TS"}
-    if additional_fields:
-        base_additional_fields.update(additional_fields)
 
     return run_and_summarize(
         atoms,
@@ -217,7 +211,7 @@ def TS_job(
         spin_multiplicity=spin_multiplicity,
         calc_defaults=calc_defaults,
         calc_swaps=calc_kwargs,
-        additional_fields=base_additional_fields,
+        additional_fields={"name": "Gaussian TS"} | (additional_fields or {}),
         copy_files=copy_files,
     )
 
@@ -282,17 +276,13 @@ def IRC_job(
     forward_calc = calc_defaults.copy()
     forward_calc["irc"] += ",forward"
     
-    forward_base_fields = {"name": "Gaussian IRC Forward"}
-    if additional_fields:
-        forward_base_fields.update(additional_fields)
-    
     forward_result = run_and_summarize(
         atoms,
         charge=charge,
         spin_multiplicity=spin_multiplicity,
         calc_defaults=forward_calc,
         calc_swaps=calc_kwargs,
-        additional_fields=forward_base_fields,
+        additional_fields={"name": "Gaussian Forward IRC"} | (additional_fields or {}),
         copy_files=copy_files,
     )
 
@@ -300,17 +290,13 @@ def IRC_job(
     backward_calc = calc_defaults.copy()
     backward_calc["irc"] += ",reverse"
     
-    backward_base_fields = {"name": "Gaussian IRC Backward"}
-    if additional_fields:
-        backward_base_fields.update(additional_fields)
-    
     backward_result = run_and_summarize(
         atoms,
         charge=charge,
         spin_multiplicity=spin_multiplicity,
         calc_defaults=backward_calc,
         calc_swaps=calc_kwargs,
-        additional_fields=backward_base_fields,
+        additional_fields={"name": "Gaussian Backward IRC"} | (additional_fields or {}),
         copy_files=copy_files,
     )
 
